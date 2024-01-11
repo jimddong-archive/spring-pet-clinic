@@ -88,15 +88,27 @@ class OwnerController {
 	public String processFindForm(@RequestParam(defaultValue = "1") int page, Owner owner, BindingResult result,
 			Model model) {
 		// allow parameterless GET request for /owners to return all records
-		if (owner.getLastName() == null) {
-			owner.setLastName(""); // empty string signifies broadest possible search
-		}
+//		if (owner.getLastName() == null) {
+//			owner.setLastName(""); // empty string signifies broadest possible search
+//		}
 
 		// find owners by last name
-		Page<Owner> ownersResults = findPaginatedForOwnersLastName(page, owner.getLastName());
+//		Page<Owner> ownersResults = findPaginatedForOwnersLastName(page, owner.getLastName());
+//		if (ownersResults.isEmpty()) {
+//			// no owners found
+//			result.rejectValue("lastName", "notFound", "not found");
+//			return "owners/findOwners";
+//		}
+
+		// find owners by first name
+		if (owner.getFirstName() == null) {
+			owner.setFirstName(""); // empty string signifies broadest possible search
+		}
+
+		Page<Owner> ownersResults = findPaginatedForOwnersFirstName(page, owner.getFirstName());
 		if (ownersResults.isEmpty()) {
 			// no owners found
-			result.rejectValue("lastName", "notFound", "not found");
+			result.rejectValue("firstName", "notFound", "not found");
 			return "owners/findOwners";
 		}
 
@@ -110,6 +122,12 @@ class OwnerController {
 		return addPaginationModel(page, model, ownersResults);
 	}
 
+	private Page<Owner> findPaginatedForOwnersFirstName(int page, String firstName) {
+		int pageSize = 5;
+		Pageable pageable = PageRequest.of(page - 1, pageSize);
+		return owners.findByFirstName(firstName, pageable);
+	}
+
 	private String addPaginationModel(int page, Model model, Page<Owner> paginated) {
 		List<Owner> listOwners = paginated.getContent();
 		model.addAttribute("currentPage", page);
@@ -119,11 +137,11 @@ class OwnerController {
 		return "owners/ownersList";
 	}
 
-	private Page<Owner> findPaginatedForOwnersLastName(int page, String lastname) {
-		int pageSize = 5;
-		Pageable pageable = PageRequest.of(page - 1, pageSize);
-		return owners.findByLastName(lastname, pageable);
-	}
+//	private Page<Owner> findPaginatedForOwnersLastName(int page, String lastname) {
+//		int pageSize = 5;
+//		Pageable pageable = PageRequest.of(page - 1, pageSize);
+//		return owners.findByLastName(lastname, pageable);
+//	}
 
 	@GetMapping("/owners/{ownerId}/edit")
 	public String initUpdateOwnerForm(@PathVariable("ownerId") int ownerId, Model model) {
